@@ -4,7 +4,7 @@
 - Verifique a versão de instalação do seu python, o projeto está usando a versão 3.7.9
 - Instale a lib para acessar a virtual env `pip install virtualenv`
 - Crie uma virtual env `virtualenv venv`
-- Ative a virtual env `.venv\Scripts\activate`
+- Ative a virtual env `.\venv\Scripts\activate`
 - Verifique a instalação dos pacotes rodando o comando `pip install -r requirements.txt`
 - Crie um arquivo .env na raiz do projeto com as seguintes variáveis:
 ```
