@@ -42,7 +42,6 @@ def add_client():
 @app.route('/client/<int:id>', methods=['PUT'])
 def update_client(id: int):
     request_data = request.get_json()
-
     database.update_instance(Client,
                              id,
                              **request_data)
