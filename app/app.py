@@ -1,4 +1,5 @@
 from flask import request, jsonify
+from sqlalchemy import exc
 
 from init import create_app
 from models import Client
@@ -33,18 +34,25 @@ def list_clients():
 @app.route('/client', methods=['POST'])
 def add_client():
     request_data = request.get_json()
-    database.add_instance(Client,
-                          **request_data)
 
-    return jsonify("success"), 200
+    try:
+        database.add_instance(Client,
+                              **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "Client already registred"}), 409
 
 
 @app.route('/client/<int:id>', methods=['PUT'])
 def update_client(id: int):
     request_data = request.get_json()
-    database.update_instance(Client,
-                             id,
-                             **request_data)
+    try:
+        database.update_instance(Client,
+                                 id,
+                                 **request_data)
+    except exc.IntegrityError:
+        return jsonify({"error": "Client already registred"}), 409
 
     return jsonify("success"), 200
 
@@ -56,4 +64,4 @@ def delete_client(id: int):
     return jsonify("success"), 200
 
 
-app.run()
+app.run(debug=True)
