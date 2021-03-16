@@ -51,10 +51,11 @@ def update_client(id: int):
         database.update_instance(Client,
                                  id,
                                  **request_data)
+
+        return jsonify("success"), 200
     except exc.IntegrityError:
         return jsonify({"error": "Client already registred"}), 409
 
-    return jsonify("success"), 200
 
 
 @app.route('/client/<int:id>', methods=['DELETE'])
