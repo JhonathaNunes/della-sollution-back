@@ -64,4 +64,4 @@ def delete_client(id: int):
     return jsonify("success"), 200
 
 
-app.run(debug=True)
+app.run()
