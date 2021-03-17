@@ -2,8 +2,7 @@ from flask import request, jsonify
 from sqlalchemy import exc
 
 from init import create_app
-from models import Client
-from models import Service
+from models import Client, Service, Material
 import database
 
 app = create_app()
@@ -77,7 +76,7 @@ def list_services():
             'id': service.id,
             'name': service.name,
             'description': service.description,
-            'value_hour': service.value_hour
+            'value_hour': "{:.2f}".format(service.value_hour).rstrip('0')
         }
         services_response.append(service_dict)
 
@@ -114,6 +113,59 @@ def update_service(id: int):
 @app.route('/service/<int:id>', methods=['DELETE'])
 def delete_service(id: int):
     database.delete_instance(Service, id)
+
+    return jsonify("success"), 200
+
+
+# MATERIAL
+
+@app.route('/material', methods=['GET'])
+def list_materials():
+    materials = database.get_all(Material)
+    materials_response = []
+    for material in materials:
+        materials_dict = {
+            'id': material.id,
+            'name': material.name,
+            'description': material.description,
+            'storage': material.storage,
+            'unique_value': "{:.3f}".format(material.unique_value).rstrip('0')
+        }
+        materials_response.append(materials_dict)
+
+    return jsonify(materials_response), 200
+
+
+@app.route('/material', methods=['POST'])
+def add_material():
+    request_data = request.get_json()
+
+    try:
+        database.add_instance(Material,
+                              **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "Material already registred"}), 409
+
+
+@app.route('/material/<int:id>', methods=['PUT'])
+def update_material(id: int):
+    request_data = request.get_json()
+    try:
+        database.update_instance(Material,
+                                 id,
+                                 **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "Material already registred"}), 409
+
+
+
+@app.route('/material/<int:id>', methods=['DELETE'])
+def delete_material(id: int):
+    database.delete_instance(Material, id)
 
     return jsonify("success"), 200
 
