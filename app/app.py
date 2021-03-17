@@ -4,6 +4,7 @@ from sqlalchemy import exc
 from init import create_app
 from models import Client, Service, Material
 import database
+import exceptions
 
 app = create_app()
 
@@ -56,14 +57,19 @@ def update_client(id: int):
         return jsonify("success"), 200
     except exc.IntegrityError:
         return jsonify({"error": "Client already registred"}), 409
+    except exceptions.NotFoundException:
+        return jsonify({'error': 'Client not found'}), 404
 
 
 
 @app.route('/client/<int:id>', methods=['DELETE'])
 def delete_client(id: int):
-    database.delete_instance(Client, id)
+    try:
+        database.delete_instance(Client, id)
 
-    return jsonify("success"), 200
+        return jsonify("success"), 200
+    except exceptions.NotFoundException:
+        return jsonify({'error': 'Client not found'}), 404
 
 # SERVICE
 
