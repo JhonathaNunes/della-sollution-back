@@ -18,4 +18,12 @@ class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     description = db.Column(db.String(2000))
-    value_hour = db.Column(db.Float(5,2))
+    value_hour = db.Column(db.Float(precision='5,2'))
+
+class Material(db.Model):
+    __tablename__ = 'materials'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    description = db.Column(db.String(2000))
+    storage = db.Column(db.Integer)
+    unique_value = db.Column(db.Float(precision='8,3'))
