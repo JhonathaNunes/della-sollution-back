@@ -3,6 +3,7 @@ from sqlalchemy import exc
 
 from init import create_app
 from models import Client
+from models import Service
 import database
 
 app = create_app()
@@ -12,6 +13,7 @@ app = create_app()
 def check():
     return "Hello World"
 
+# CLIENT
 
 @app.route('/client', methods=['GET'])
 def list_clients():
@@ -61,6 +63,57 @@ def update_client(id: int):
 @app.route('/client/<int:id>', methods=['DELETE'])
 def delete_client(id: int):
     database.delete_instance(Client, id)
+
+    return jsonify("success"), 200
+
+# SERVICE
+
+@app.route('/service', methods=['GET'])
+def list_services():
+    services = database.get_all(Service)
+    services_response = []
+    for service in services:
+        service_dict = {
+            'id': service.id,
+            'name': service.name,
+            'description': service.description,
+            'value_hour': service.value_hour
+        }
+        services_response.append(service_dict)
+
+    return jsonify(services_response), 200
+
+
+@app.route('/service', methods=['POST'])
+def add_service():
+    request_data = request.get_json()
+
+    try:
+        database.add_instance(Service,
+                              **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "Service already registred"}), 409
+
+
+@app.route('/service/<int:id>', methods=['PUT'])
+def update_service(id: int):
+    request_data = request.get_json()
+    try:
+        database.update_instance(Service,
+                                 id,
+                                 **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "Service already registred"}), 409
+
+
+
+@app.route('/service/<int:id>', methods=['DELETE'])
+def delete_service(id: int):
+    database.delete_instance(Service, id)
 
     return jsonify("success"), 200
 
