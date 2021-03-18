@@ -2,7 +2,7 @@ from flask import request, jsonify
 from sqlalchemy import exc
 
 from init import create_app
-from models import Client, Service, Material
+from models import Client, Service, Material, User
 import database
 import exceptions
 
@@ -175,5 +175,23 @@ def delete_material(id: int):
 
     return jsonify("success"), 200
 
+#USER
 
-app.run()
+@app.route('/user', methods=['GET'])
+def list_user():
+    users = database.get_all(User)
+    users_response =[]
+    for user in users:
+        user_dict= {
+            'id': user.id,
+            'full_name': user.full_name,
+            'user_name': user.user_name,
+            'password': user.password,
+            'email': user.email,
+        }
+        users_response.append(user_dict)
+
+    return jsonify(users_response), 200
+
+
+app.run()     
