@@ -15,6 +15,7 @@ def check():
 
 # CLIENT
 
+
 @app.route('/client', methods=['GET'])
 def list_clients():
     clients = database.get_all(Client)
@@ -72,6 +73,7 @@ def delete_client(id: int):
 
 # SERVICE
 
+
 @app.route('/service', methods=['GET'])
 def list_services():
     services = database.get_all(Service)
@@ -112,7 +114,6 @@ def update_service(id: int):
         return jsonify("success"), 200
     except exc.IntegrityError:
         return jsonify({"error": "Service already registred"}), 409
-
 
 
 @app.route('/service/<int:id>', methods=['DELETE'])
@@ -166,6 +167,7 @@ def update_material(id: int):
     except exc.IntegrityError:
         return jsonify({"error": "Material already registred"}), 409
 
+
 @app.route('/material/<int:id>', methods=['DELETE'])
 def delete_material(id: int):
     database.delete_instance(Material, id)
@@ -173,14 +175,14 @@ def delete_material(id: int):
     return jsonify("success"), 200
 
 
-#USER
+# USER
 
 @app.route('/user', methods=['GET'])
 def list_user():
     users = database.get_all(User)
-    users_response =[]
+    users_response = []
     for user in users:
-        user_dict= {
+        user_dict = {
             'id': user.id,
             'full_name': user.full_name,
             'user_name': user.user_name,
@@ -228,5 +230,6 @@ def delete_user(id: int):
         return jsonify("success"), 200
     except exceptions.NotFoundException:
         return jsonify({'error': 'User not found'}), 404
+
 
 app.run()
