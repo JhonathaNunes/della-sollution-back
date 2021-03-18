@@ -61,7 +61,6 @@ def update_client(id: int):
         return jsonify({'error': 'Client not found'}), 404
 
 
-
 @app.route('/client/<int:id>', methods=['DELETE'])
 def delete_client(id: int):
     try:
@@ -167,13 +166,12 @@ def update_material(id: int):
     except exc.IntegrityError:
         return jsonify({"error": "Material already registred"}), 409
 
-
-
 @app.route('/material/<int:id>', methods=['DELETE'])
 def delete_material(id: int):
     database.delete_instance(Material, id)
 
     return jsonify("success"), 200
+
 
 #USER
 
@@ -194,4 +192,41 @@ def list_user():
     return jsonify(users_response), 200
 
 
-app.run()     
+@app.route('/user', methods=['POST'])
+def add_user():
+    request_data = request.get_json()
+
+    try:
+        database.add_instance(User,
+                              **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "User already registred"}), 409
+
+
+@app.route('/user/<int:id>', methods=['PUT'])
+def update_user(id: int):
+    request_data = request.get_json()
+    try:
+        database.update_instance(User,
+                                 id,
+                                 **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "User already registred"}), 409
+    except exceptions.NotFoundException:
+        return jsonify({'error': 'User not found'}), 404
+
+
+@app.route('/user/<int:id>', methods=['DELETE'])
+def delete_user(id: int):
+    try:
+        database.delete_instance(User, id)
+
+        return jsonify("success"), 200
+    except exceptions.NotFoundException:
+        return jsonify({'error': 'User not found'}), 404
+
+app.run()
