@@ -13,12 +13,14 @@ class Client(db.Model):
     cnpj = db.Column(db.String(14))
     cpf = db.Column(db.String(14), unique=True)
 
+
 class Service(db.Model):
     __tablename__ = 'services'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     description = db.Column(db.String(2000))
     value_hour = db.Column(db.Float(precision='5,2'))
+
 
 class Material(db.Model):
     __tablename__ = 'materials'
