@@ -13,8 +13,8 @@ app = create_app()
 def check():
     return "Hello World"
 
-# CLIENT
 
+# CLIENT
 
 @app.route('/client', methods=['GET'])
 def list_clients():
@@ -71,8 +71,8 @@ def delete_client(id: int):
     except exceptions.NotFoundException:
         return jsonify({'error': 'Client not found'}), 404
 
-# SERVICE
 
+# SERVICE
 
 @app.route('/service', methods=['GET'])
 def list_services():
