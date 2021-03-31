@@ -238,6 +238,7 @@ def list_materials():
 
 
 @app.route('/material', methods=['POST'])
+@auth.login_required
 def add_material():
     request_data = request.get_json()
 
@@ -251,6 +252,7 @@ def add_material():
 
 
 @app.route('/material/<int:id>', methods=['PUT'])
+@auth.login_required
 def update_material(id: int):
     request_data = request.get_json()
     try:
@@ -264,6 +266,7 @@ def update_material(id: int):
 
 
 @app.route('/material/<int:id>', methods=['DELETE'])
+@auth.login_required
 def delete_material(id: int):
     database.delete_instance(Material, id)
 
