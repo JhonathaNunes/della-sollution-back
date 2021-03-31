@@ -1,5 +1,7 @@
-  
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+import time
+import jwt
 
 db = SQLAlchemy()
 
@@ -38,3 +40,25 @@ class User(db.Model):
     user_name = db.Column(db.String(65), unique=True)
     password = db.Column(db.String(255))
     email = db.Column(db.String(65), unique=True)
+
+    def hash_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password, password)
+
+    def generate_auth_token(self, app, expires_in=86400):
+        return jwt.encode(
+            {'id': self.id, 'exp': time.time() + expires_in},
+            app.config['SECRET_KEY'],
+            algorithm='HS256')
+
+    @staticmethod
+    def verify_auth_token(token, app):
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'],
+                              algorithms=['HS256'])
+        except Exception:
+            return
+
+        return User.query.get(data['id'])
