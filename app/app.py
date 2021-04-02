@@ -2,7 +2,7 @@ from flask import request, jsonify
 from sqlalchemy import exc
 
 from init import create_app
-from models import Client, Service, Material, User
+from models import Client, Service, Material, User, Order
 import database
 import exceptions
 
@@ -230,6 +230,65 @@ def delete_user(id: int):
         return jsonify("success"), 200
     except exceptions.NotFoundException:
         return jsonify({'error': 'User not found'}), 404
+
+
+# ORDER
+
+@app.route('/order', methods=['GET'])
+def list_orders():
+    orders = database.get_all(Order)
+    orders_response = []
+    for order in orders:
+        order_dict = {
+            'id': order.id,
+            'client_id': order.client_id,
+            'user_id': order.user_id,
+            'status': order.status,
+            'description': order.description,
+            'created_at': order.created_at,
+            'updated_at': order.updated_at
+        }
+        orders_response.append(order_dict)
+
+    return jsonify(orders_response), 200
+
+
+@app.route('/order', methods=['POST'])
+def add_order():
+    request_data = request.get_json()
+
+    try:
+        database.add_instance(Order,
+                              **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "Order already registred"}), 409
+
+
+@app.route('/order/<int:id>', methods=['PUT'])
+def update_order(id: int):
+    request_data = request.get_json()
+    try:
+        database.update_instance(Order,
+                                 id,
+                                 **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "Order already registred"}), 409
+    except exceptions.NotFoundException:
+        return jsonify({'error': 'Order not found'}), 404
+
+
+@app.route('/order/<int:id>', methods=['DELETE'])
+def delete_order(id: int):
+    try:
+        database.delete_instance(Order, id)
+
+        return jsonify("success"), 200
+    except exceptions.NotFoundException:
+        return jsonify({'error': 'Order not found'}), 404
 
 
 app.run()

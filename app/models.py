@@ -1,5 +1,6 @@
   
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func
 
 db = SQLAlchemy()
 
@@ -12,6 +13,7 @@ class Client(db.Model):
     phone = db.Column(db.String(11))
     cnpj = db.Column(db.String(14))
     cpf = db.Column(db.String(14), unique=True)
+    orders = db.relationship('Order', backref='clients', lazy=True)
 
 
 class Service(db.Model):
@@ -38,6 +40,7 @@ class User(db.Model):
     user_name = db.Column(db.String(65), unique=True)
     password = db.Column(db.String(255))
     email = db.Column(db.String(65), unique=True)
+    orders = db.relationship('Order', backref='users', lazy=True)
 
 
 class Order_Status(db.Model):
@@ -52,3 +55,14 @@ class Visit_Status(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(250), unique=True)
     description = db.Column(db.String(250))
+
+
+class Order(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(db.Integer, db.ForeignKey('order_status.id'), nullable=False)
+    description = db.Column(db.String(250))
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
