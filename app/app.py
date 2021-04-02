@@ -1,12 +1,14 @@
-from flask import request, jsonify
+from flask import request, jsonify, g
+from flask_httpauth import HTTPBasicAuth
 from sqlalchemy import exc
 
 from init import create_app
-from models import Client, Service, Material, User
+from models import Client, Service, Material, User, db
 import database
 import exceptions
 
 app = create_app()
+auth = HTTPBasicAuth()
 
 
 @app.route('/', methods=['GET'])
@@ -14,9 +16,98 @@ def check():
     return "Hello World"
 
 
+@auth.verify_password
+def verify_password(username_or_token, password):
+    # first try to authenticate by token
+    user = User.verify_auth_token(username_or_token, app)
+    if not user:
+        # try to authenticate with username/password
+        user = User.query.filter_by(username=username_or_token).first()
+        if not user or not user.verify_password(password):
+            return False
+    g.user = user
+    return True
+
+
+@app.route('/login', methods=['POST'])
+@auth.login_required
+def login():
+    token = g.user.generate_auth_token(app)
+    return jsonify({'token': token.decode('ascii')}), 200
+
+
+# USER
+
+@app.route('/user', methods=['GET'])
+@auth.login_required
+def list_user():
+    users = database.get_all(User)
+    users_response = []
+    for user in users:
+        user_dict = {
+            'id': user.id,
+            'full_name': user.full_name,
+            'username': user.username,
+            'password': user.password,
+            'email': user.email,
+        }
+        users_response.append(user_dict)
+
+    return jsonify(users_response), 200
+
+
+@app.route('/user', methods=['POST'])
+def add_user():
+    request_data = request.get_json()
+
+    try:
+        user = User(**request_data)
+
+        user.hash_password(request_data["password"])
+
+        db.session.add(user)
+
+        database.commit()
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "User already registred"}), 409
+
+
+@app.route('/user/<int:id>', methods=['PUT'])
+@auth.login_required
+def update_user(id: int):
+    request_data = request.get_json()
+    try:
+        if request_data["password"]:
+            del request_data["password"]
+
+        database.update_instance(User,
+                                 id,
+                                 **request_data)
+
+        return jsonify("success"), 200
+    except exc.IntegrityError:
+        return jsonify({"error": "User already registred"}), 409
+    except exceptions.NotFoundException:
+        return jsonify({'error': 'User not found'}), 404
+
+
+@app.route('/user/<int:id>', methods=['DELETE'])
+@auth.login_required
+def delete_user(id: int):
+    try:
+        database.delete_instance(User, id)
+
+        return jsonify("success"), 200
+    except exceptions.NotFoundException:
+        return jsonify({'error': 'User not found'}), 404
+
+
 # CLIENT
 
 @app.route('/client', methods=['GET'])
+@auth.login_required
 def list_clients():
     clients = database.get_all(Client)
     clients_response = []
@@ -35,6 +126,7 @@ def list_clients():
 
 
 @app.route('/client', methods=['POST'])
+@auth.login_required
 def add_client():
     request_data = request.get_json()
 
@@ -48,6 +140,7 @@ def add_client():
 
 
 @app.route('/client/<int:id>', methods=['PUT'])
+@auth.login_required
 def update_client(id: int):
     request_data = request.get_json()
     try:
@@ -63,6 +156,7 @@ def update_client(id: int):
 
 
 @app.route('/client/<int:id>', methods=['DELETE'])
+@auth.login_required
 def delete_client(id: int):
     try:
         database.delete_instance(Client, id)
@@ -75,6 +169,7 @@ def delete_client(id: int):
 # SERVICE
 
 @app.route('/service', methods=['GET'])
+@auth.login_required
 def list_services():
     services = database.get_all(Service)
     services_response = []
@@ -91,6 +186,7 @@ def list_services():
 
 
 @app.route('/service', methods=['POST'])
+@auth.login_required
 def add_service():
     request_data = request.get_json()
 
@@ -104,6 +200,7 @@ def add_service():
 
 
 @app.route('/service/<int:id>', methods=['PUT'])
+@auth.login_required
 def update_service(id: int):
     request_data = request.get_json()
     try:
@@ -117,6 +214,7 @@ def update_service(id: int):
 
 
 @app.route('/service/<int:id>', methods=['DELETE'])
+@auth.login_required
 def delete_service(id: int):
     database.delete_instance(Service, id)
 
@@ -126,6 +224,7 @@ def delete_service(id: int):
 # MATERIAL
 
 @app.route('/material', methods=['GET'])
+@auth.login_required
 def list_materials():
     materials = database.get_all(Material)
     materials_response = []
@@ -143,6 +242,7 @@ def list_materials():
 
 
 @app.route('/material', methods=['POST'])
+@auth.login_required
 def add_material():
     request_data = request.get_json()
 
@@ -156,6 +256,7 @@ def add_material():
 
 
 @app.route('/material/<int:id>', methods=['PUT'])
+@auth.login_required
 def update_material(id: int):
     request_data = request.get_json()
     try:
@@ -169,67 +270,11 @@ def update_material(id: int):
 
 
 @app.route('/material/<int:id>', methods=['DELETE'])
+@auth.login_required
 def delete_material(id: int):
     database.delete_instance(Material, id)
 
     return jsonify("success"), 200
-
-
-# USER
-
-@app.route('/user', methods=['GET'])
-def list_user():
-    users = database.get_all(User)
-    users_response = []
-    for user in users:
-        user_dict = {
-            'id': user.id,
-            'full_name': user.full_name,
-            'user_name': user.user_name,
-            'password': user.password,
-            'email': user.email,
-        }
-        users_response.append(user_dict)
-
-    return jsonify(users_response), 200
-
-
-@app.route('/user', methods=['POST'])
-def add_user():
-    request_data = request.get_json()
-
-    try:
-        database.add_instance(User,
-                              **request_data)
-
-        return jsonify("success"), 200
-    except exc.IntegrityError:
-        return jsonify({"error": "User already registred"}), 409
-
-
-@app.route('/user/<int:id>', methods=['PUT'])
-def update_user(id: int):
-    request_data = request.get_json()
-    try:
-        database.update_instance(User,
-                                 id,
-                                 **request_data)
-
-        return jsonify("success"), 200
-    except exc.IntegrityError:
-        return jsonify({"error": "User already registred"}), 409
-    except exceptions.NotFoundException:
-        return jsonify({'error': 'User not found'}), 404
-
-
-@app.route('/user/<int:id>', methods=['DELETE'])
-def delete_user(id: int):
-    try:
-        database.delete_instance(User, id)
-
-        return jsonify("success"), 200
-    except exceptions.NotFoundException:
-        return jsonify({'error': 'User not found'}), 404
 
 
 app.run()
