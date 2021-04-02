@@ -38,3 +38,17 @@ class User(db.Model):
     user_name = db.Column(db.String(65), unique=True)
     password = db.Column(db.String(255))
     email = db.Column(db.String(65), unique=True)
+
+
+class Order_Status(db.Model):
+    __tablename__ = 'order_status'
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(250), unique=True)
+    description = db.Column(db.String(250))
+
+
+class Visit_Status(db.Model):
+    __tablename__ = 'visit_status'
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(250), unique=True)
+    description = db.Column(db.String(250))
