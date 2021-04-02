@@ -22,7 +22,7 @@ def verify_password(username_or_token, password):
     user = User.verify_auth_token(username_or_token, app)
     if not user:
         # try to authenticate with username/password
-        user = User.query.filter_by(user_name=username_or_token).first()
+        user = User.query.filter_by(username=username_or_token).first()
         if not user or not user.verify_password(password):
             return False
     g.user = user
@@ -46,7 +46,7 @@ def list_user():
         user_dict = {
             'id': user.id,
             'full_name': user.full_name,
-            'user_name': user.user_name,
+            'username': user.username,
             'password': user.password,
             'email': user.email,
         }
