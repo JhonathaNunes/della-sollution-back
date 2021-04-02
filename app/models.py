@@ -62,3 +62,17 @@ class User(db.Model):
             return
 
         return User.query.get(data['id'])
+
+
+class Order_Status(db.Model):
+    __tablename__ = 'order_status'
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(250), unique=True)
+    description = db.Column(db.String(250))
+
+
+class Visit_Status(db.Model):
+    __tablename__ = 'visit_status'
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(250), unique=True)
+    description = db.Column(db.String(250))
