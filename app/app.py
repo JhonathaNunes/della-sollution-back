@@ -39,6 +39,7 @@ def login():
 # USER
 
 @app.route('/user', methods=['GET'])
+@auth.login_required
 def list_user():
     users = database.get_all(User)
     users_response = []
@@ -78,6 +79,9 @@ def add_user():
 def update_user(id: int):
     request_data = request.get_json()
     try:
+        if request_data["password"]:
+            del request_data["password"]
+
         database.update_instance(User,
                                  id,
                                  **request_data)
