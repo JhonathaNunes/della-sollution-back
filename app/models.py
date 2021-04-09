@@ -40,6 +40,7 @@ class User(db.Model):
     username = db.Column(db.String(65), unique=True)
     password = db.Column(db.String(255))
     email = db.Column(db.String(65), unique=True)
+    orders = db.relationship('Orders', backref='users', lazy=True)
 
     def hash_password(self, password):
         self.password = generate_password_hash(password)
@@ -125,6 +126,6 @@ class Orders(db.Model):
     client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     description = db.Column(db.Text)
-    orderStatus_id = db.Column(db.Integer, db.ForeignKey('order_status.id'))
+    order_status_id = db.Column(db.Integer, db.ForeignKey('order_status.id'))
     created_at = db.Column(db.DateTime)
-    update_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)

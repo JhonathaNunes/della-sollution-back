@@ -44,12 +44,25 @@ def list_user():
     users = database.get_all(User)
     users_response = []
     for user in users:
+        user_order = []
+
+        for order in user.orders:
+            user_order.append({
+                'id': order.id,
+                'description': order.description,
+                'client': order.client_id,
+                'status': order.order_status_id,
+                'created_at': order.created_at,
+                'updated_at': order.updated_at,
+            })
+
         user_dict = {
             'id': user.id,
             'full_name': user.full_name,
             'username': user.username,
             'password': user.password,
             'email': user.email,
+            'orders': user_order,
         }
         users_response.append(user_dict)
 
