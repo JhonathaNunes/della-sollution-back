@@ -1,9 +1,10 @@
 from flask import request, jsonify, g
 from flask_httpauth import HTTPBasicAuth
 from sqlalchemy import exc
+from cerberus import Validator
 
 from init import create_app
-from models import Client, Service, Material, User, db
+from models import Client, Service, Material, User
 import database
 import exceptions
 
@@ -72,15 +73,36 @@ def list_user():
 @app.route('/user', methods=['POST'])
 def add_user():
     request_data = request.get_json()
+    schema = {
+        'full_name': {
+            'type': 'string',
+            'maxlength': 200
+        },
+        'username': {
+            'type': 'string',
+            'maxlength': 65
+        },
+        'password': {
+            'type': 'string',
+            'maxlength': 20
+        },
+        'email': {
+            'type': 'string',
+            'maxlength': 65
+        }
+    }
+
+    v = Validator(require_all=True)
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
 
     try:
         user = User(**request_data)
 
         user.hash_password(request_data["password"])
 
-        db.session.add(user)
-
-        database.commit()
+        database.add_instance(user)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -91,6 +113,26 @@ def add_user():
 @auth.login_required
 def update_user(id: int):
     request_data = request.get_json()
+    schema = {
+        'full_name': {
+            'type': 'string',
+            'maxlength': 200
+        },
+        'username': {
+            'type': 'string',
+            'maxlength': 65
+        },
+        'email': {
+            'type': 'string',
+            'maxlength': 65
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
+
     try:
         if request_data["password"]:
             del request_data["password"]
@@ -142,6 +184,38 @@ def list_clients():
 @auth.login_required
 def add_client():
     request_data = request.get_json()
+    schema = {
+        'full_name': {
+            'type': 'string',
+            'maxlength': 200
+        },
+        'email': {
+            'type': 'string',
+            'maxlength': 65
+        },
+        'phone': {
+            'type': 'string',
+            'minlength': 10,
+            'maxlength': 11
+        },
+        'cnpj': {
+            'type': 'string',
+            'minlength': 11,
+            'maxlength': 11,
+            'required': False
+        },
+        'cpf': {
+            'type': 'string',
+            'minlength': 11,
+            'maxlength': 11,
+            'required': False
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
 
     try:
         database.add_instance(Client,
@@ -156,6 +230,37 @@ def add_client():
 @auth.login_required
 def update_client(id: int):
     request_data = request.get_json()
+    schema = {
+        'full_name': {
+            'type': 'string',
+            'maxlength': 200
+        },
+        'email': {
+            'type': 'string',
+            'maxlength': 65
+        },
+        'phone': {
+            'type': 'string',
+            'minlength': 10,
+            'maxlength': 11
+        },
+        'cnpj': {
+            'type': 'string',
+            'minlength': 11,
+            'maxlength': 11
+        },
+        'cpf': {
+            'type': 'string',
+            'minlength': 11,
+            'maxlength': 11
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
+
     try:
         database.update_instance(Client,
                                  id,
@@ -202,6 +307,23 @@ def list_services():
 @auth.login_required
 def add_service():
     request_data = request.get_json()
+    schema = {
+        'name': {
+            'type': 'string',
+            'maxlength': 255
+        },
+        'description': {
+            'type': 'string'
+        },
+        'value_hour': {
+            'type': 'float'
+        }
+    }
+
+    v = Validator(require_all=True)
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
 
     try:
         database.add_instance(Service,
@@ -216,6 +338,24 @@ def add_service():
 @auth.login_required
 def update_service(id: int):
     request_data = request.get_json()
+    schema = {
+        'name': {
+            'type': 'string',
+            'maxlength': 255
+        },
+        'description': {
+            'type': 'string'
+        },
+        'value_hour': {
+            'type': 'float'
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
+
     try:
         database.update_instance(Service,
                                  id,
@@ -258,6 +398,26 @@ def list_materials():
 @auth.login_required
 def add_material():
     request_data = request.get_json()
+    schema = {
+        'name': {
+            'type': 'string',
+            'maxlength': 255
+        },
+        'description': {
+            'type': 'string'
+        },
+        'storage': {
+            'type': 'integer'
+        },
+        'unique_value': {
+            'type': 'float'
+        }
+    }
+
+    v = Validator(require_all=True)
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
 
     try:
         database.add_instance(Material,
@@ -272,9 +432,34 @@ def add_material():
 @auth.login_required
 def update_material(id: int):
     request_data = request.get_json()
+    schema = {
+        'name': {
+            'type': 'string',
+            'maxlength': 255
+        },
+        'description': {
+            'type': 'string'
+        },
+        'new_items': {
+            'type': 'integer'
+        },
+        'unique_value': {
+            'type': 'float'
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
+
     try:
-        database.update_instance(Material,
-                                 id,
+        material = Material.query.get(id)
+
+        if request_data['new_items'] and material is not None:
+            material.storage += request_data['new_items']
+
+        database.update_instance(material or Material,
                                  **request_data)
 
         return jsonify("success"), 200
