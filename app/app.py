@@ -1,9 +1,20 @@
 from flask import request, jsonify, g
 from flask_httpauth import HTTPBasicAuth
 from sqlalchemy import exc
+from cerberus import Validator
 
 from init import create_app
-from models import Client, Service, Material, User, Orders, Address, EvaluationVisits, OrderServices, ServiceMaterials, db
+from models import (
+    Client,
+    Service,
+    Material,
+    User,
+    Orders,
+    Address,
+    EvaluationVisits,
+    OrderServices,
+    ServiceMaterials,
+)
 import database
 import exceptions
 
@@ -66,7 +77,7 @@ def list_user():
                 },
                 'description': order.description,
                 'created_at': order.created_at,
-                'update_at': order.update_at
+                'updated_at': order.updated_at
             })
 
         user_dict = {
@@ -84,15 +95,36 @@ def list_user():
 @app.route('/user', methods=['POST'])
 def add_user():
     request_data = request.get_json()
+    schema = {
+        'full_name': {
+            'type': 'string',
+            'maxlength': 200
+        },
+        'username': {
+            'type': 'string',
+            'maxlength': 65
+        },
+        'password': {
+            'type': 'string',
+            'maxlength': 20
+        },
+        'email': {
+            'type': 'string',
+            'maxlength': 65
+        }
+    }
+
+    v = Validator(require_all=True)
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
 
     try:
         user = User(**request_data)
 
         user.hash_password(request_data["password"])
 
-        db.session.add(user)
-
-        database.commit()
+        database.add_instance(user)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -103,6 +135,26 @@ def add_user():
 @auth.login_required
 def update_user(id: int):
     request_data = request.get_json()
+    schema = {
+        'full_name': {
+            'type': 'string',
+            'maxlength': 200
+        },
+        'username': {
+            'type': 'string',
+            'maxlength': 65
+        },
+        'email': {
+            'type': 'string',
+            'maxlength': 65
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
+
     try:
         if request_data["password"]:
             del request_data["password"]
@@ -157,7 +209,7 @@ def list_clients():
                     },
                     'description': order.description,
                     'created_at': order.created_at,
-                    'update_at': order.update_at
+                    'updated_at': order.updated_at
                 })
 
         client_dict = {
@@ -178,6 +230,38 @@ def list_clients():
 @auth.login_required
 def add_client():
     request_data = request.get_json()
+    schema = {
+        'full_name': {
+            'type': 'string',
+            'maxlength': 200
+        },
+        'email': {
+            'type': 'string',
+            'maxlength': 65
+        },
+        'phone': {
+            'type': 'string',
+            'minlength': 10,
+            'maxlength': 11
+        },
+        'cnpj': {
+            'type': 'string',
+            'minlength': 11,
+            'maxlength': 11,
+            'required': False
+        },
+        'cpf': {
+            'type': 'string',
+            'minlength': 11,
+            'maxlength': 11,
+            'required': False
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
 
     try:
         database.add_instance(Client,
@@ -192,6 +276,37 @@ def add_client():
 @auth.login_required
 def update_client(id: int):
     request_data = request.get_json()
+    schema = {
+        'full_name': {
+            'type': 'string',
+            'maxlength': 200
+        },
+        'email': {
+            'type': 'string',
+            'maxlength': 65
+        },
+        'phone': {
+            'type': 'string',
+            'minlength': 10,
+            'maxlength': 11
+        },
+        'cnpj': {
+            'type': 'string',
+            'minlength': 11,
+            'maxlength': 11
+        },
+        'cpf': {
+            'type': 'string',
+            'minlength': 11,
+            'maxlength': 11
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
+
     try:
         database.update_instance(Client,
                                  id,
@@ -238,6 +353,23 @@ def list_services():
 @auth.login_required
 def add_service():
     request_data = request.get_json()
+    schema = {
+        'name': {
+            'type': 'string',
+            'maxlength': 255
+        },
+        'description': {
+            'type': 'string'
+        },
+        'value_hour': {
+            'type': 'float'
+        }
+    }
+
+    v = Validator(require_all=True)
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
 
     try:
         database.add_instance(Service,
@@ -252,6 +384,24 @@ def add_service():
 @auth.login_required
 def update_service(id: int):
     request_data = request.get_json()
+    schema = {
+        'name': {
+            'type': 'string',
+            'maxlength': 255
+        },
+        'description': {
+            'type': 'string'
+        },
+        'value_hour': {
+            'type': 'float'
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
+
     try:
         database.update_instance(Service,
                                  id,
@@ -294,6 +444,26 @@ def list_materials():
 @auth.login_required
 def add_material():
     request_data = request.get_json()
+    schema = {
+        'name': {
+            'type': 'string',
+            'maxlength': 255
+        },
+        'description': {
+            'type': 'string'
+        },
+        'storage': {
+            'type': 'integer'
+        },
+        'unique_value': {
+            'type': 'float'
+        }
+    }
+
+    v = Validator(require_all=True)
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
 
     try:
         database.add_instance(Material,
@@ -308,9 +478,34 @@ def add_material():
 @auth.login_required
 def update_material(id: int):
     request_data = request.get_json()
+    schema = {
+        'name': {
+            'type': 'string',
+            'maxlength': 255
+        },
+        'description': {
+            'type': 'string'
+        },
+        'new_items': {
+            'type': 'integer'
+        },
+        'unique_value': {
+            'type': 'float'
+        }
+    }
+
+    v = Validator()
+
+    if (not v.validate(request_data, schema)):
+        return jsonify(v.errors), 422
+
     try:
-        database.update_instance(Material,
-                                 id,
+        material = Material.query.get(id)
+
+        if request_data['new_items'] and material is not None:
+            material.storage += request_data['new_items']
+
+        database.update_instance(material or Material,
                                  **request_data)
 
         return jsonify("success"), 200
@@ -372,7 +567,7 @@ def list_orders():
             },
             'description': order.description,
             'created_at': order.created_at,
-            'update_at': order.update_at,
+            'updated_at': order.updated_at,
             'address': orderAddresses_addresses
         }
         orders_response.append(order_dict)
@@ -434,7 +629,7 @@ def list_addresses():
                 'description': orderAddresses.order.description,
                 'orderStatus_id': orderAddresses.order.orderStatus_id,
                 'created_at': orderAddresses.order.created_at,
-                'update_at': orderAddresses.order.update_at
+                'updated_at': orderAddresses.order.updated_at
             })
 
         address_dict = {
@@ -505,7 +700,7 @@ def list_evaluationVisits():
                 'description': evaluationVisit.order.description,
                 'orderStatus_id': evaluationVisit.order.orderStatus_id,
                 'created_at': evaluationVisit.order.created_at,
-                'update_at': evaluationVisit.order.update_at,
+                'updated_at': evaluationVisit.order.updated_at,
             },
             'status_id': evaluationVisit.status_id,
             'status': {
@@ -600,7 +795,7 @@ def list_orderServices():
                 'description': orderService.order.description,
                 'orderStatus_id': orderService.order.orderStatus_id,
                 'created_at': orderService.order.created_at,
-                'update_at': orderService.order.update_at,
+                'updated_at': orderService.order.updated_at,
             },
             'status_id': orderService.status_id,
             'status': {

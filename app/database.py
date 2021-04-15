@@ -6,8 +6,12 @@ def get_all(model):
 
 
 def add_instance(model, **kwargs):
-    instance = model(**kwargs)
-    db.session.add(instance)
+    if kwargs:
+        instance = model(**kwargs)
+        db.session.add(instance)
+    else:
+        db.session.add(model)
+
     commit()
 
 
@@ -21,11 +25,14 @@ def delete_instance(model, id):
     commit()
 
 
-def update_instance(model, id, **kwargs):
-    instance = model.query.get(id)
+def update_instance(model, id=-1, **kwargs):
+    instance = model
 
-    if instance is None:
-        raise NotFoundException
+    if id > 0:
+        instance = model.query.get(id)
+
+        if instance is None:
+            raise NotFoundException
 
     for attr, new_value in kwargs.items():
         setattr(instance, attr, new_value)

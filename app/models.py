@@ -142,7 +142,7 @@ class Orders(db.Model):
     orderStatus_id = db.Column(db.Integer, db.ForeignKey('order_status.id'))
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime)
-    update_at = db.Column(db.DateTime)
+    updated_at = db.Column(db.DateTime)
     orderAddresses = db.relationship('OrderAddresses', backref='order', lazy=True)
     evaluationVisits = db.relationship('EvaluationVisits', backref='order', lazy=True)
     orderServices = db.relationship('OrderServices', backref='order', lazy=True)
