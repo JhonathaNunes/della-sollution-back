@@ -12,8 +12,8 @@ class Client(db.Model):
     full_name = db.Column(db.String(200))
     email = db.Column(db.String(250), unique=True)
     phone = db.Column(db.String(11))
-    cnpj = db.Column(db.String(14))
-    cpf = db.Column(db.String(14), unique=True)
+    cnpj = db.Column(db.String(11))
+    cpf = db.Column(db.String(11), unique=True)
 
 
 class Service(db.Model):
@@ -30,7 +30,7 @@ class Material(db.Model):
     name = db.Column(db.String(255))
     description = db.Column(db.Text)
     storage = db.Column(db.Integer)
-    unique_value = db.Column(db.Float(precision='8,3'))
+    unique_value = db.Column(db.Float(precision='8,2'))
 
 
 class User(db.Model):
