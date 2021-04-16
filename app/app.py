@@ -12,8 +12,6 @@ from models import (
     Orders,
     Address,
     EvaluationVisits,
-    OrderServices,
-    ServiceMaterials,
 )
 import database
 import exceptions
@@ -529,16 +527,16 @@ def list_orders():
     orders = database.get_all(Orders)
     orders_response = []
     for order in orders:
-        orderAddresses_addresses = []
+        order_address = []
 
-        for orderAddresses in order.orderAddresses:
-            orderAddresses_addresses.append({
-                'id': orderAddresses.address.id,
-                'cep': orderAddresses.address.cep,
-                'street': orderAddresses.address.street,
-                'number': orderAddresses.address.number,
-                'complement': orderAddresses.address.complement,
-                'city': orderAddresses.address.city,
+        for oa in order.order_address:
+            order_address.append({
+                'id': oa.address.id,
+                'cep': oa.address.cep,
+                'street': oa.address.street,
+                'number': oa.address.number,
+                'complement': oa.address.complement,
+                'city': oa.address.city,
             })
 
         order_dict = {
@@ -559,8 +557,8 @@ def list_orders():
                 'username': order.user.username,
                 'email': order.user.email
             },
-            'orderStatus_id': order.orderStatus_id,
-            'orderStatus': {
+            'order_status_id': order.order_status_id,
+            'order_status': {
                 'id': order.orderStatus.id,
                 'status': order.orderStatus.status,
                 'description': order.orderStatus.description
@@ -568,7 +566,7 @@ def list_orders():
             'description': order.description,
             'created_at': order.created_at,
             'updated_at': order.updated_at,
-            'address': orderAddresses_addresses
+            'address': order_address
         }
         orders_response.append(order_dict)
 
@@ -619,19 +617,6 @@ def list_addresses():
     addresses = database.get_all(Address)
     addresses_response = []
     for address in addresses:
-        orderAddresses_orders = []
-
-        for orderAddresses in address.orderAddresses:
-            orderAddresses_orders.append({
-                'id': orderAddresses.order.id,
-                'client_id': orderAddresses.order.client_id,
-                'user_id': orderAddresses.order.user_id,
-                'description': orderAddresses.order.description,
-                'orderStatus_id': orderAddresses.order.orderStatus_id,
-                'created_at': orderAddresses.order.created_at,
-                'updated_at': orderAddresses.order.updated_at
-            })
-
         address_dict = {
             'id': address.id,
             'cep': address.cep,
@@ -639,8 +624,8 @@ def list_addresses():
             'number': address.number,
             'complement': address.complement,
             'city': address.city,
-            'orders': orderAddresses_orders
         }
+
         addresses_response.append(address_dict)
 
     return jsonify(addresses_response), 200
@@ -686,40 +671,40 @@ def delete_address(id: int):
 
 @app.route('/evaluationVisit', methods=['GET'])
 @auth.login_required
-def list_evaluationVisits():
-    evaluationVisits = database.get_all(EvaluationVisits)
-    evaluationVisits_response = []
-    for evaluationVisit in evaluationVisits:
-        evaluationVisit_dict = {
-            'id': evaluationVisit.id,
-            'order_id': evaluationVisit.order_id,
+def list_evaluation_visits():
+    evaluation_visits = database.get_all(EvaluationVisits)
+    evaluation_visits_response = []
+    for evaluation_visit in evaluation_visits:
+        evaluation_visit_dict = {
+            'id': evaluation_visit.id,
+            'order_id': evaluation_visit.order_id,
             'order': {
-                'id': evaluationVisit.order.id,
-                'client_id': evaluationVisit.order.client_id,
-                'user_id': evaluationVisit.order.user_id,
-                'description': evaluationVisit.order.description,
-                'orderStatus_id': evaluationVisit.order.orderStatus_id,
-                'created_at': evaluationVisit.order.created_at,
-                'updated_at': evaluationVisit.order.updated_at,
+                'id': evaluation_visit.order.id,
+                'client_id': evaluation_visit.order.client_id,
+                'user_id': evaluation_visit.order.user_id,
+                'description': evaluation_visit.order.description,
+                'order_status_id': evaluation_visit.order.order_status_id,
+                'created_at': evaluation_visit.order.created_at,
+                'updated_at': evaluation_visit.order.updated_at,
             },
-            'status_id': evaluationVisit.status_id,
+            'status_id': evaluation_visit.status_id,
             'status': {
-                'id': evaluationVisit.visitStatus.id,
-                'status': evaluationVisit.visitStatus.status,
-                'description': evaluationVisit.visitStatus.description
+                'id': evaluation_visit.visitStatus.id,
+                'status': evaluation_visit.visitStatus.status,
+                'description': evaluation_visit.visitStatus.description
             },
-            'evaluation': evaluationVisit.evaluation,
-            'visit_at': evaluationVisit.visit_at,
-            'payment': evaluationVisit.payment
+            'evaluation': evaluation_visit.evaluation,
+            'visit_at': evaluation_visit.visit_at,
+            'payment': evaluation_visit.payment
         }
-        evaluationVisits_response.append(evaluationVisit_dict)
+        evaluation_visits_response.append(evaluation_visit_dict)
 
-    return jsonify(evaluationVisits_response), 200
+    return jsonify(evaluation_visits_response), 200
 
 
 @app.route('/evaluationVisit', methods=['POST'])
 @auth.login_required
-def add_evaluationVisit():
+def add_evaluation_visits():
     request_data = request.get_json()
 
     try:
@@ -733,7 +718,7 @@ def add_evaluationVisit():
 
 @app.route('/evaluationVisit/<int:id>', methods=['PUT'])
 @auth.login_required
-def update_evaluationVisit(id: int):
+def update_evaluation_visits(id: int):
     request_data = request.get_json()
     try:
         database.update_instance(EvaluationVisits,
@@ -747,105 +732,10 @@ def update_evaluationVisit(id: int):
 
 @app.route('/evaluationVisit/<int:id>', methods=['DELETE'])
 @auth.login_required
-def delete_evaluationVisit(id: int):
+def delete_evaluation_visits(id: int):
     database.delete_instance(EvaluationVisits, id)
 
     return jsonify("success"), 200
 
-
-# ORDER SERVICES
-
-@app.route('/orderService', methods=['GET'])
-@auth.login_required
-def list_orderServices():
-    orderServices = database.get_all(OrderServices)
-    orderServices_response = []
-    for orderService in orderServices:
-        serviceMaterials_materials = []
-
-        for serviceMaterial in orderService.serviceMaterials:
-            serviceMaterials_materials.append({
-                'id': serviceMaterial.id,
-                'qtd': serviceMaterial.qtd,
-                'unique_value': serviceMaterial.unique_value,
-                'material_id': serviceMaterial.material_id,
-                'material': {
-                    'id': serviceMaterial.material.id,
-                    'name': serviceMaterial.material.name,
-                    'description': serviceMaterial.material.description,
-                    'storage': serviceMaterial.material.storage,
-                    'unique_value': serviceMaterial.material.unique_value
-                }
-            })
-
-        orderService_dict = {
-            'id': orderService.id,
-            'service_id': orderService.service_id,
-            'service': {
-                'id': orderService.service.id,
-                'name': orderService.service.name,
-                'description': orderService.service.description,
-                'value_hour': orderService.service.value_hour
-            },
-            'order_id': orderService.order_id,
-            'order': {
-                'id': orderService.order.id,
-                'client_id': orderService.order.client_id,
-                'user_id': orderService.order.user_id,
-                'description': orderService.order.description,
-                'orderStatus_id': orderService.order.orderStatus_id,
-                'created_at': orderService.order.created_at,
-                'updated_at': orderService.order.updated_at,
-            },
-            'status_id': orderService.status_id,
-            'status': {
-                'id': orderService.visitStatus.id,
-                'status': orderService.visitStatus.status,
-                'description': orderService.visitStatus.description
-            },
-            'service_date': orderService.service_date,
-            'hours_worked': orderService.hours_worked,
-            'value_hour': orderService.value_hour,
-            'serviceMaterials': serviceMaterials_materials
-        }
-        orderServices_response.append(orderService_dict)
-
-    return jsonify(orderServices_response), 200
-
-
-@app.route('/orderService', methods=['POST'])
-@auth.login_required
-def add_orderService():
-    request_data = request.get_json()
-
-    try:
-        database.add_instance(OrderServices,
-                              **request_data)
-
-        return jsonify("success"), 200
-    except exc.IntegrityError:
-        return jsonify({"error": "OrderServices already registred"}), 409
-
-
-@app.route('/orderService/<int:id>', methods=['PUT'])
-@auth.login_required
-def update_orderService(id: int):
-    request_data = request.get_json()
-    try:
-        database.update_instance(OrderServices,
-                                 id,
-                                 **request_data)
-
-        return jsonify("success"), 200
-    except exc.IntegrityError:
-        return jsonify({"error": "OrderServices already registred"}), 409
-
-
-@app.route('/orderService/<int:id>', methods=['DELETE'])
-@auth.login_required
-def delete_orderService(id: int):
-    database.delete_instance(OrderServices, id)
-
-    return jsonify("success"), 200
 
 app.run()
