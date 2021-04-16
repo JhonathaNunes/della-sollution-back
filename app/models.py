@@ -12,8 +12,9 @@ class Client(db.Model):
     full_name = db.Column(db.String(200))
     email = db.Column(db.String(250), unique=True)
     phone = db.Column(db.String(11))
-    cnpj = db.Column(db.String(11))
-    cpf = db.Column(db.String(11), unique=True)
+    cnpj = db.Column(db.String(14))
+    cpf = db.Column(db.String(14), unique=True)
+    orders = db.relationship('Orders', backref='client', lazy=True)
 
 
 class Service(db.Model):
@@ -22,6 +23,11 @@ class Service(db.Model):
     name = db.Column(db.String(255))
     description = db.Column(db.Text)
     value_hour = db.Column(db.Float(precision='5,2'))
+    orderServices = db.relationship(
+        'OrderServices',
+        backref='service',
+        lazy=True
+    )
 
 
 class Material(db.Model):
@@ -30,7 +36,12 @@ class Material(db.Model):
     name = db.Column(db.String(255))
     description = db.Column(db.Text)
     storage = db.Column(db.Integer)
-    unique_value = db.Column(db.Float(precision='8,2'))
+    unique_value = db.Column(db.Float(precision='8,3'))
+    serviceMaterials = db.relationship(
+        'ServiceMaterials',
+        backref='material',
+        lazy=True
+    )
 
 
 class User(db.Model):
@@ -40,7 +51,7 @@ class User(db.Model):
     username = db.Column(db.String(65), unique=True)
     password = db.Column(db.String(255))
     email = db.Column(db.String(65), unique=True)
-    orders = db.relationship('Orders', backref='users', lazy=True)
+    orders = db.relationship('Orders', backref='user', lazy=True)
 
     def hash_password(self, password):
         self.password = generate_password_hash(password)
@@ -70,6 +81,7 @@ class OrderStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(250), unique=True)
     description = db.Column(db.Text)
+    orders = db.relationship('Orders', backref='orderStatus', lazy=True)
 
 
 class VisitStatus(db.Model):
@@ -77,6 +89,16 @@ class VisitStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(250), unique=True)
     description = db.Column(db.Text)
+    evaluationVisits = db.relationship(
+        'EvaluationVisits',
+        backref='visitStatus',
+        lazy=True
+    )
+    orderServices = db.relationship(
+        'OrderServices',
+        backref='visitStatus',
+        lazy=True
+    )
 
 
 class Address(db.Model):
@@ -87,16 +109,15 @@ class Address(db.Model):
     number = db.Column(db.Integer)
     complement = db.Column(db.String(50))
     city = db.Column(db.String(70))
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
 
 
 class EvaluationVisits(db.Model):
     __tablename__ = 'evaluation_visits'
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
+    status_id = db.Column(db.Integer, db.ForeignKey('visit_status.id'))
     evaluation = db.Column(db.Text)
     visit_at = db.Column(db.DateTime)
-    status_id = db.Column(db.Integer, db.ForeignKey('visit_status.id'))
     payment = db.Column(db.Float(precision='8,3'))
 
 
@@ -114,18 +135,46 @@ class OrderServices(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('services.id'))
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
-    service_id = db.Column(db.DateTime)
-    hours_worked = db.Column(db.DateTime)
-    value_hour = db.Column(db.Float)
     status_id = db.Column(db.Integer, db.ForeignKey('visit_status.id'))
+    service_date = db.Column(db.DateTime)
+    hours_worked = db.Column(db.Float(precision='5,2'))
+    value_hour = db.Column(db.Float(precision='5,2'))
+    serviceMaterials = db.relationship(
+        'ServiceMaterials',
+        backref='orderService',
+        lazy=True
+    )
+
+
+class OrderAddresses(db.Model):
+    __tablename__ = 'order_addresses'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
+    address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
 
 
 class Orders(db.Model):
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
+    address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    orderStatus_id = db.Column(db.Integer, db.ForeignKey('order_status.id'))
     description = db.Column(db.Text)
-    order_status_id = db.Column(db.Integer, db.ForeignKey('order_status.id'))
     created_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
+    orderAddresses = db.relationship(
+        'Address',
+        backref='order',
+        lazy=True
+    )
+    evaluationVisits = db.relationship(
+        'EvaluationVisits',
+        backref='order',
+        lazy=True
+    )
+    orderServices = db.relationship(
+        'OrderServices',
+        backref='order',
+        lazy=True
+    )
