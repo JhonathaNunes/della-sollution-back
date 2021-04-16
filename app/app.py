@@ -531,7 +531,7 @@ def list_orders():
     for order in orders:
         orderAddresses_addresses = []
 
-        for orderAddresses in order.orderAddresses:            
+        for orderAddresses in order.orderAddresses:
             orderAddresses_addresses.append({
                 'id': orderAddresses.address.id,
                 'cep': orderAddresses.address.cep,
@@ -621,7 +621,7 @@ def list_addresses():
     for address in addresses:
         orderAddresses_orders = []
 
-        for orderAddresses in address.orderAddresses:            
+        for orderAddresses in address.orderAddresses:
             orderAddresses_orders.append({
                 'id': orderAddresses.order.id,
                 'client_id': orderAddresses.order.client_id,
@@ -763,7 +763,7 @@ def list_orderServices():
     for orderService in orderServices:
         serviceMaterials_materials = []
 
-        for serviceMaterial in orderService.serviceMaterials:            
+        for serviceMaterial in orderService.serviceMaterials:
             serviceMaterials_materials.append({
                 'id': serviceMaterial.id,
                 'qtd': serviceMaterial.qtd,
@@ -847,6 +847,5 @@ def delete_orderService(id: int):
     database.delete_instance(OrderServices, id)
 
     return jsonify("success"), 200
-
 
 app.run()
