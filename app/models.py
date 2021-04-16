@@ -23,7 +23,7 @@ class Service(db.Model):
     name = db.Column(db.String(255))
     description = db.Column(db.Text)
     value_hour = db.Column(db.Float(precision='5,2'))
-    orderServices = db.relationship(
+    order_services = db.relationship(
         'OrderServices',
         backref='service',
         lazy=True
@@ -37,7 +37,7 @@ class Material(db.Model):
     description = db.Column(db.Text)
     storage = db.Column(db.Integer)
     unique_value = db.Column(db.Float(precision='8,3'))
-    serviceMaterials = db.relationship(
+    service_materials = db.relationship(
         'ServiceMaterials',
         backref='material',
         lazy=True
@@ -89,7 +89,7 @@ class VisitStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(250), unique=True)
     description = db.Column(db.Text)
-    evaluationVisits = db.relationship(
+    evaluation_visits = db.relationship(
         'EvaluationVisits',
         backref='visitStatus',
         lazy=True
@@ -139,18 +139,11 @@ class OrderServices(db.Model):
     service_date = db.Column(db.DateTime)
     hours_worked = db.Column(db.Float(precision='5,2'))
     value_hour = db.Column(db.Float(precision='5,2'))
-    serviceMaterials = db.relationship(
+    service_materials = db.relationship(
         'ServiceMaterials',
         backref='orderService',
         lazy=True
     )
-
-
-class OrderAddresses(db.Model):
-    __tablename__ = 'order_addresses'
-    id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'))
-    address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
 
 
 class Orders(db.Model):
@@ -159,11 +152,11 @@ class Orders(db.Model):
     address_id = db.Column(db.Integer, db.ForeignKey('address.id'))
     client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    orderStatus_id = db.Column(db.Integer, db.ForeignKey('order_status.id'))
+    order_status_id = db.Column(db.Integer, db.ForeignKey('order_status.id'))
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
-    orderAddresses = db.relationship(
+    address = db.relationship(
         'Address',
         backref='order',
         lazy=True
