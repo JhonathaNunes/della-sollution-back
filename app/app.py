@@ -527,10 +527,10 @@ def list_orders():
     orders = database.get_all(Orders)
     orders_response = []
     for order in orders:
-        order_addresses = []
+        order_address = []
 
-        for oa in order.order_addresses:
-            order_addresses.append({
+        for oa in order.order_address:
+            order_address.append({
                 'id': oa.address.id,
                 'cep': oa.address.cep,
                 'street': oa.address.street,
@@ -566,7 +566,7 @@ def list_orders():
             'description': order.description,
             'created_at': order.created_at,
             'updated_at': order.updated_at,
-            'address': order_addresses
+            'address': order_address
         }
         orders_response.append(order_dict)
 
