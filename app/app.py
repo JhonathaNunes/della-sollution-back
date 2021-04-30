@@ -1,7 +1,9 @@
 from flask import request, jsonify, g
+from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
 from sqlalchemy import exc
 from cerberus import Validator
+from config import allowed_origin
 
 from init import create_app
 from models import (
@@ -17,6 +19,7 @@ import database
 import exceptions
 
 app = create_app()
+cors = CORS(app, resources={r"/*": {"origins": allowed_origin}})
 auth = HTTPBasicAuth()
 
 
