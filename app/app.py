@@ -19,7 +19,7 @@ import database
 import exceptions
 
 app = create_app()
-cors = CORS(app, resources={r"/*": {"origins": allowed_origin}})
+cors = CORS(app, resources={r"*": {"origins": allowed_origin}})
 auth = HTTPBasicAuth()
 
 
@@ -45,7 +45,13 @@ def verify_password(username_or_token, password):
 @auth.login_required
 def login():
     token = g.user.generate_auth_token(app)
-    return jsonify({'token': token.decode('ascii')}), 200
+    user = g.user.__dict__
+    del user['_sa_instance_state']
+    del user['password']
+    return jsonify({
+        'user': user,
+        'token': token.decode('ascii')
+    }), 200
 
 
 # USER
