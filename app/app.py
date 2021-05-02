@@ -1,9 +1,10 @@
-from flask import request, jsonify, g
+from flask import jsonify, g, request
 from flask_httpauth import HTTPBasicAuth
+from GenerateRoute import GenerateRoute
 from sqlalchemy import exc
 from cerberus import Validator
-
 from init import create_app
+from models import User
 from models import (
     Client,
     Service,
@@ -11,7 +12,7 @@ from models import (
     User,
     Orders,
     Address,
-    EvaluationVisits,
+    EvaluationVisits
 )
 import database
 import exceptions
@@ -44,6 +45,10 @@ def login():
     token = g.user.generate_auth_token(app)
     return jsonify({'token': token.decode('ascii')}), 200
 
+
+# GenerateRoute(app)
+
+# app.run()
 
 # USER
 
@@ -737,5 +742,5 @@ def delete_evaluation_visits(id: int):
 
     return jsonify("success"), 200
 
-
+    
 app.run()
