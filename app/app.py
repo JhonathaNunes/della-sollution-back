@@ -1,8 +1,10 @@
-from flask import jsonify, g, request
+from flask import request, jsonify, g
+from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
 from GenerateRoute import GenerateRoute
 from sqlalchemy import exc
 from cerberus import Validator
+from config import allowed_origin
 from init import create_app
 from models import User
 from models import (
@@ -18,6 +20,7 @@ import database
 import exceptions
 
 app = create_app()
+cors = CORS(app, resources={r"*": {"origins": allowed_origin}})
 auth = HTTPBasicAuth()
 
 
@@ -43,7 +46,13 @@ def verify_password(username_or_token, password):
 @auth.login_required
 def login():
     token = g.user.generate_auth_token(app)
-    return jsonify({'token': token.decode('ascii')}), 200
+    user = g.user.__dict__
+    del user['_sa_instance_state']
+    del user['password']
+    return jsonify({
+        'user': user,
+        'token': token.decode('ascii')
+    }), 200
 
 
 # GenerateRoute(app)

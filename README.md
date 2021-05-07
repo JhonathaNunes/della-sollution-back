@@ -13,6 +13,8 @@ DB_PASSWORD=<password>
 DB_HOST=<host>
 DB_PORT=3306
 DB_NAME=<db_name>
+SECRET_KEY=<secret_key>
+FRONT_URL=http://localhost:3000
 ```
 - Para iniciar o servidor flask basta rodar o arquivo `.\app\app.py`
 - Para iniciar o servidor com auto reload coloque o atributo `debug=True` na função `app.run()` no arquivo `app.py` **(Lembre de não comentar com o `debug=True`)**
