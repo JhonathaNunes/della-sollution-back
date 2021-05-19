@@ -1,11 +1,9 @@
-
-from flask import Flask
 from BaseController import BaseController
 
 class MaterialController(BaseController):
 
-    def __init__(self, model, app: Flask):
-        self.schema = {
+    def __init__(self, model):
+        self.default_schema = {
             'name': {
                 'type': 'string',
                 'maxlength': 255
@@ -20,10 +18,10 @@ class MaterialController(BaseController):
                 'type': 'float'
             }
         }
-        super(MaterialController, self).__init__(model, app, self.schema)
+        super(MaterialController, self).__init__(model, self.default_schema)
 
 
-    def manipulateGet(self, entities):
+    def manipulate_get(self, entities):
         materials_response = []
         for material in entities:
             materials_dict = {
