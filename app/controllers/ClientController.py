@@ -19,8 +19,8 @@ class ClientController(BaseController):
             },
             'cnpj': {
                 'type': 'string',
-                'minlength': 11,
-                'maxlength': 11,
+                'minlength': 14,
+                'maxlength': 14,
                 'required': False
             },
             'cpf': {
