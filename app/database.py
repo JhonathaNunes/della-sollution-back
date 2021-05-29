@@ -1,5 +1,6 @@
-from models import db
-from exceptions import NotFoundException
+from .models import db
+from .exceptions import NotFoundException
+
 
 def get_all(model):
     return model.query.all()
