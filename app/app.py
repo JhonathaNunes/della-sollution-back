@@ -15,8 +15,15 @@ from .models import (
     Address,
     EvaluationVisits,
 )
-import database
-import exceptions
+from .database import (
+    get_all,
+    add_instance,
+    delete_instance,
+    update_instance
+)
+from .exceptions import (
+    NotFoundException
+)
 
 app = create_app()
 cors = CORS(app, resources={r"/*": {"origins": allowed_origin}})
@@ -53,7 +60,7 @@ def login():
 @app.route('/user', methods=['GET'])
 @auth.login_required
 def list_user():
-    users = database.get_all(User)
+    users = get_all(User)
     users_response = []
     for user in users:
         user_order = []
@@ -125,7 +132,7 @@ def add_user():
 
         user.hash_password(request_data["password"])
 
-        database.add_instance(user)
+        add_instance(user)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -160,14 +167,14 @@ def update_user(id: int):
         if request_data["password"]:
             del request_data["password"]
 
-        database.update_instance(User,
-                                 id,
-                                 **request_data)
+        update_instance(User,
+                        id,
+                        **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
         return jsonify({"error": "User already registred"}), 409
-    except exceptions.NotFoundException:
+    except NotFoundException:
         return jsonify({'error': 'User not found'}), 404
 
 
@@ -175,10 +182,10 @@ def update_user(id: int):
 @auth.login_required
 def delete_user(id: int):
     try:
-        database.delete_instance(User, id)
+        delete_instance(User, id)
 
         return jsonify("success"), 200
-    except exceptions.NotFoundException:
+    except NotFoundException:
         return jsonify({'error': 'User not found'}), 404
 
 
@@ -187,12 +194,12 @@ def delete_user(id: int):
 @app.route('/client', methods=['GET'])
 @auth.login_required
 def list_clients():
-    clients = database.get_all(Client)
+    clients = get_all(Client)
     clients_response = []
     for client in clients:
         client_order = []
 
-        for order in client.orders:            
+        for order in client.orders:
             client_order.append({
                     'id': order.id,
                     'user_id': order.user_id,
@@ -265,8 +272,7 @@ def add_client():
         return jsonify(v.errors), 422
 
     try:
-        database.add_instance(Client,
-                              **request_data)
+        add_instance(Client, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -309,14 +315,12 @@ def update_client(id: int):
         return jsonify(v.errors), 422
 
     try:
-        database.update_instance(Client,
-                                 id,
-                                 **request_data)
+        update_instance(Client, id, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
         return jsonify({"error": "Client already registred"}), 409
-    except exceptions.NotFoundException:
+    except NotFoundException:
         return jsonify({'error': 'Client not found'}), 404
 
 
@@ -324,10 +328,10 @@ def update_client(id: int):
 @auth.login_required
 def delete_client(id: int):
     try:
-        database.delete_instance(Client, id)
+        delete_instance(Client, id)
 
         return jsonify("success"), 200
-    except exceptions.NotFoundException:
+    except NotFoundException:
         return jsonify({'error': 'Client not found'}), 404
 
 
@@ -336,7 +340,7 @@ def delete_client(id: int):
 @app.route('/service', methods=['GET'])
 @auth.login_required
 def list_services():
-    services = database.get_all(Service)
+    services = get_all(Service)
     services_response = []
     for service in services:
         service_dict = {
@@ -373,8 +377,7 @@ def add_service():
         return jsonify(v.errors), 422
 
     try:
-        database.add_instance(Service,
-                              **request_data)
+        add_instance(Service, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -404,9 +407,7 @@ def update_service(id: int):
         return jsonify(v.errors), 422
 
     try:
-        database.update_instance(Service,
-                                 id,
-                                 **request_data)
+        update_instance(Service, id, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -416,7 +417,7 @@ def update_service(id: int):
 @app.route('/service/<int:id>', methods=['DELETE'])
 @auth.login_required
 def delete_service(id: int):
-    database.delete_instance(Service, id)
+    delete_instance(Service, id)
 
     return jsonify("success"), 200
 
@@ -426,7 +427,7 @@ def delete_service(id: int):
 @app.route('/material', methods=['GET'])
 @auth.login_required
 def list_materials():
-    materials = database.get_all(Material)
+    materials = get_all(Material)
     materials_response = []
     for material in materials:
         materials_dict = {
@@ -467,8 +468,7 @@ def add_material():
         return jsonify(v.errors), 422
 
     try:
-        database.add_instance(Material,
-                              **request_data)
+        add_instance(Material, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -506,8 +506,7 @@ def update_material(id: int):
         if request_data['new_items'] and material is not None:
             material.storage += request_data['new_items']
 
-        database.update_instance(material or Material,
-                                 **request_data)
+        update_instance(material or Material, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -517,7 +516,7 @@ def update_material(id: int):
 @app.route('/material/<int:id>', methods=['DELETE'])
 @auth.login_required
 def delete_material(id: int):
-    database.delete_instance(Material, id)
+    delete_instance(Material, id)
 
     return jsonify("success"), 200
 
@@ -527,7 +526,7 @@ def delete_material(id: int):
 @app.route('/order', methods=['GET'])
 @auth.login_required
 def list_orders():
-    orders = database.get_all(Orders)
+    orders = get_all(Orders)
     orders_response = []
     for order in orders:
         order_address = []
@@ -582,8 +581,7 @@ def add_order():
     request_data = request.get_json()
 
     try:
-        database.add_instance(Orders,
-                              **request_data)
+        add_instance(Orders, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -595,9 +593,7 @@ def add_order():
 def update_order(id: int):
     request_data = request.get_json()
     try:
-        database.update_instance(Orders,
-                                 id,
-                                 **request_data)
+        update_instance(Orders, id, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -607,7 +603,7 @@ def update_order(id: int):
 @app.route('/order/<int:id>', methods=['DELETE'])
 @auth.login_required
 def delete_order(id: int):
-    database.delete_instance(Orders, id)
+    delete_instance(Orders, id)
 
     return jsonify("success"), 200
 
@@ -617,7 +613,7 @@ def delete_order(id: int):
 @app.route('/address', methods=['GET'])
 @auth.login_required
 def list_addresses():
-    addresses = database.get_all(Address)
+    addresses = get_all(Address)
     addresses_response = []
     for address in addresses:
         address_dict = {
@@ -640,8 +636,7 @@ def add_address():
     request_data = request.get_json()
 
     try:
-        database.add_instance(Address,
-                              **request_data)
+        add_instance(Address, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -653,9 +648,7 @@ def add_address():
 def update_address(id: int):
     request_data = request.get_json()
     try:
-        database.update_instance(Address,
-                                 id,
-                                 **request_data)
+        update_instance(Address, id, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -665,7 +658,7 @@ def update_address(id: int):
 @app.route('/address/<int:id>', methods=['DELETE'])
 @auth.login_required
 def delete_address(id: int):
-    database.delete_instance(Address, id)
+    delete_instance(Address, id)
 
     return jsonify("success"), 200
 
@@ -675,7 +668,7 @@ def delete_address(id: int):
 @app.route('/evaluationVisit', methods=['GET'])
 @auth.login_required
 def list_evaluation_visits():
-    evaluation_visits = database.get_all(EvaluationVisits)
+    evaluation_visits = get_all(EvaluationVisits)
     evaluation_visits_response = []
     for evaluation_visit in evaluation_visits:
         evaluation_visit_dict = {
@@ -711,8 +704,7 @@ def add_evaluation_visits():
     request_data = request.get_json()
 
     try:
-        database.add_instance(EvaluationVisits,
-                              **request_data)
+        add_instance(EvaluationVisits, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -724,9 +716,7 @@ def add_evaluation_visits():
 def update_evaluation_visits(id: int):
     request_data = request.get_json()
     try:
-        database.update_instance(EvaluationVisits,
-                                 id,
-                                 **request_data)
+        update_instance(EvaluationVisits, id, **request_data)
 
         return jsonify("success"), 200
     except exc.IntegrityError:
@@ -736,7 +726,7 @@ def update_evaluation_visits(id: int):
 @app.route('/evaluationVisit/<int:id>', methods=['DELETE'])
 @auth.login_required
 def delete_evaluation_visits(id: int):
-    database.delete_instance(EvaluationVisits, id)
+    delete_instance(EvaluationVisits, id)
 
     return jsonify("success"), 200
 
