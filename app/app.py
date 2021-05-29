@@ -731,4 +731,4 @@ def delete_evaluation_visits(id: int):
     return jsonify("success"), 200
 
 
-app.run()
+app.run(threaded=True, port=5000)
