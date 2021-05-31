@@ -23,18 +23,16 @@ class GenerateDefaultData():
 
     def default_visit_status(self):
         return [
-            VisitStatus(status = 'A', description = 'Agendado'),
-            VisitStatus(status = 'C', description = 'Cancelado'),
-            VisitStatus(status = 'P', description = 'Pago'),
-            VisitStatus(status = 'V', description = 'Visitado')
+            VisitStatus(status = 'P', description = 'Pendente'),
+            VisitStatus(status = 'CA', description = 'Cancelado'),
+            VisitStatus(status = 'F', description = 'Finalizado')
         ]
 
 
     def default_order_status(self):
         return [
             OrderStatus(status = 'P', description = 'Pendente'),
-            OrderStatus(status = 'EP', description = 'Em Progresso'),
             OrderStatus(status = 'CA', description = 'Cancelado'),
-            OrderStatus(status = 'CO', description = 'Completo'),
+            OrderStatus(status = 'F', description = 'Finalizado')
         ]
     

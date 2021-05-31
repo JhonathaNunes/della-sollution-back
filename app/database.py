@@ -2,7 +2,7 @@ from models import db
 from exceptions import NotFoundException
 
 def get_all(model):
-    return model.query.all()
+    return model.query.filter_by(active = True).all()
 
 
 def add_instance(model, **kwargs):
@@ -40,4 +40,5 @@ def update_instance(model, id=-1, **kwargs):
 
 
 def commit():
+    db.session.flush()
     db.session.commit()

@@ -1,5 +1,11 @@
+from BaseController import BaseController
 from flask import request, jsonify
 from BaseController import BaseController
+from models import (
+    db,
+    Material,
+    ServiceMaterials
+)
 
 class OrderServiceController(BaseController):
 
@@ -22,6 +28,10 @@ class OrderServiceController(BaseController):
             },
             'value_hour': {
                 'type': 'float'
+            },
+            'new_materials': {
+                'type': 'list',
+                'required': False
             }
         }
         super(OrderServiceController, self).__init__(model, self.default_schema)
@@ -61,3 +71,19 @@ class OrderServiceController(BaseController):
             order_service_response.append(order_service_dict)
 
         return order_service_response
+
+
+    def manipulate_put(self, entity, request_data):
+        if request_data["new_materials"]:
+            new_materials = request_data["new_materials"]
+            for new_material in new_materials:
+                param_service_material = {}
+                material = Material.query.filter_by(id=new_material['id']).first()
+
+                param_service_material['order_service_id'] = entity.id
+                param_service_material['material_id'] = material.id
+                param_service_material['unique_value'] = material.unique_value
+                param_service_material['qtd'] = new_material['qtd']
+                new_service_material = ServiceMaterials(**param_service_material)
+                db.session.add(new_service_material)
+            db.session.commit()
