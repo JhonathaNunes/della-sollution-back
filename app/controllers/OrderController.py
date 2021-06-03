@@ -223,7 +223,27 @@ class OrderController(BaseController):
         except exceptions.NotFoundException:
             return jsonify({"error": self.model + " not found"}), 404
 
+    @auth.login_required
+    def cancelar(self, id: int):
+        try:
+            entity = self.model.query.get(id)
+            order_status = OrderStatus.query.filter_by(status='C').first()
+            visit_status = VisitStatus.query.filter_by(status='C').first()
+
+            entity.order_status_id = order_status.id
+            
+            for order_service in entity.order_service:
+                order_service.visit_status_id = visit_status.id
+
+            database.update_instance(entity)
+
+            return jsonify("success"), 200
+        except exc.IntegrityError:
+            return jsonify({"error": self.model + " already registred"}), 409
+        except exceptions.NotFoundException:
+            return jsonify({"error": self.model + " not found"}), 404
 
     def custom_routes(self, app, model_string):
         app.add_url_rule('/'+model_string+'/finalizar/<int:id>', model_string+'_finalizar', self.finalizar, methods=['PUT'])
+        app.add_url_rule('/'+model_string+'/cancelar/<int:id>', model_string+'_cancelar', self.cancelar, methods=['PUT'])
         
