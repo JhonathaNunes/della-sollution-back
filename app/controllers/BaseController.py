@@ -86,7 +86,10 @@ class BaseController(object):
     @auth.login_required
     def delete(self, id: int):
         try:
-            database.delete_instance(self.model, id)
+            entity = self.model.query.get(id)
+            if (entity is not None):
+                entity.active = False
+                database.update_instance(entity)
 
             return jsonify("success"), 200
         except exceptions.NotFoundException:

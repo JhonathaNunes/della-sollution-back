@@ -14,6 +14,7 @@ class Client(db.Model):
     phone = db.Column(db.String(11))
     cnpj = db.Column(db.String(14))
     cpf = db.Column(db.String(14), unique=True)
+    active = db.Column(db.Boolean, default=True)
     orders = db.relationship(
         'Orders', 
         backref='client', 
@@ -27,6 +28,7 @@ class Service(db.Model):
     name = db.Column(db.String(255))
     description = db.Column(db.Text)
     value_hour = db.Column(db.Float(precision='5,2'))
+    active = db.Column(db.Boolean, default=True)
     order_service = db.relationship(
         'OrderServices',
         backref='service',
@@ -41,6 +43,7 @@ class Material(db.Model):
     description = db.Column(db.Text)
     storage = db.Column(db.Integer)
     unique_value = db.Column(db.Float(precision='8,3'))
+    active = db.Column(db.Boolean, default=True)
     service_material = db.relationship(
         'ServiceMaterials',
         backref='material',
@@ -55,6 +58,7 @@ class User(db.Model):
     username = db.Column(db.String(65), unique=True)
     password = db.Column(db.String(255))
     email = db.Column(db.String(65), unique=True)
+    active = db.Column(db.Boolean, default=True)
     orders = db.relationship(
         'Orders', 
         backref='user', 
@@ -89,6 +93,7 @@ class OrderStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(250), unique=True)
     description = db.Column(db.Text)
+    active = db.Column(db.Boolean, default=True)
     orders = db.relationship(
         'Orders', 
         backref='order_status', 
@@ -101,6 +106,7 @@ class VisitStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(250), unique=True)
     description = db.Column(db.Text)
+    active = db.Column(db.Boolean, default=True)
     evaluation_visit = db.relationship(
         'EvaluationVisits',
         backref='visit_status',
@@ -121,6 +127,7 @@ class Address(db.Model):
     number = db.Column(db.Integer)
     complement = db.Column(db.String(50))
     city = db.Column(db.String(70))
+    active = db.Column(db.Boolean, default=True)
     orders = db.relationship(
         'Orders', 
         backref='address', 
@@ -136,6 +143,7 @@ class EvaluationVisits(db.Model):
     evaluation = db.Column(db.Text)
     visit_at = db.Column(db.DateTime)
     payment = db.Column(db.Float(precision='8,3'))
+    active = db.Column(db.Boolean, default=True)
 
 
 class ServiceMaterials(db.Model):
@@ -145,6 +153,7 @@ class ServiceMaterials(db.Model):
     order_service_id = db.Column(db.Integer, db.ForeignKey('order_services.id'))
     qtd = db.Column(db.Integer)
     unique_value = db.Column(db.Float(precision='8,3'))
+    active = db.Column(db.Boolean, default=True)
 
 
 class OrderServices(db.Model):
@@ -156,6 +165,7 @@ class OrderServices(db.Model):
     service_date = db.Column(db.DateTime)
     hours_worked = db.Column(db.Float(precision='5,2'))
     value_hour = db.Column(db.Float(precision='5,2'))
+    active = db.Column(db.Boolean, default=True)
     service_material = db.relationship(
         'ServiceMaterials',
         backref='order_service',
@@ -173,6 +183,8 @@ class Orders(db.Model):
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
+    payment = db.Column(db.Float(precision='16,3'))
+    active = db.Column(db.Boolean, default=True)
     order_service = db.relationship(
         'OrderServices',
         backref='order',

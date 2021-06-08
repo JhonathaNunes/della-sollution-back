@@ -16,6 +16,10 @@ class MaterialController(BaseController):
             },
             'unique_value': {
                 'type': 'float'
+            },
+            'new_items': {
+                'type': 'integer',
+                'required': False
             }
         }
         super(MaterialController, self).__init__(model, self.default_schema)
@@ -33,3 +37,8 @@ class MaterialController(BaseController):
             }
             materials_response.append(materials_dict)
         return materials_response
+
+    
+    def manipulate_put(self, entity, request_data):
+        if request_data['new_items'] and entity is not None:
+            entity.storage += request_data['new_items']
